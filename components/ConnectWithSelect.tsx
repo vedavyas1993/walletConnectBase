@@ -42,8 +42,9 @@ export function ConnectWithSelect({
   isActivating,
   error,
   isActive,
-  loggedin,
+  loggedIn,
   setLoggedIn,
+  loggedInFrom,
 }: {
   connector: MetaMask | WalletConnect | CoinbaseWallet | Network | GnosisSafe;
   chainId: ReturnType<Web3ReactHooks["useChainId"]>;
@@ -60,40 +61,48 @@ export function ConnectWithSelect({
   const [desiredChainId, setDesiredChainId] = useState<number>(
     isNetwork ? 1 : -1
   );
+
+  // const setSessionStorage = (LoggedInFrom) => {
+  //   sessionStorage.setItem("isLoggedIn", true);
+  //   sessionStorage.setItem(
+  //     "LoggedInFrom",
+  //     LoggedInFrom ? LoggedInFrom : loggedInFrom
+  //   );
+  //   setLoggedIn(true);
+  // };
+
+  var connectHandler = (LoggedInFrom) => {
+    // setSessionStorage(LoggedInFrom);
+    return () =>
+      connector instanceof GnosisSafe
+        ? void connector.activate()
+        : connector instanceof WalletConnect || connector instanceof Network
+        ? connector.activate(desiredChainId === -1 ? undefined : desiredChainId)
+        : connector.activate(
+            desiredChainId === -1
+              ? undefined
+              : getAddChainParameters(desiredChainId)
+          );
+  };
+
   useEffect(() => {
     if (isNetwork) {
       setLoggedIn(true);
     }
   });
-  const setLocalStorage = () => {
-    localStorage.setItem("isLoggedIn", true);
-    setLoggedIn(true);
-  };
-  const connectHandler = () => {
-    setLocalStorage();
-    return isActivating
-      ? undefined
-      : () =>
-          connector instanceof GnosisSafe
-            ? void connector.activate()
-            : connector instanceof WalletConnect || connector instanceof Network
-            ? connector.activate(
-                desiredChainId === -1 ? undefined : desiredChainId
-              )
-            : connector.activate(
-                desiredChainId === -1
-                  ? undefined
-                  : getAddChainParameters(desiredChainId)
-              );
-  };
 
   useEffect(() => {
-    if (JSON.parse(localStorage.getItem("isLoggedIn")) == true) {
-      connectHandler()();
+    if (JSON.parse(sessionStorage.getItem("isLoggedIn")) == true) {
+      console.log(
+        "xyz",
+        typeof connectHandler(sessionStorage.getItem("LoggedInFrom"))
+      );
+      connectHandler(sessionStorage.getItem("LoggedInFrom"))();
     }
   }, []);
   const switchChain = useCallback(
     async (desiredChainId: number) => {
+      connectHandler(sessionStorage.getItem("LoggedInFrom"))();
       setDesiredChainId(desiredChainId);
       // if we're already connected to the desired chain, return
       if (desiredChainId === chainId) return;
@@ -116,6 +125,9 @@ export function ConnectWithSelect({
   );
 
   if (error) {
+    sessionStorage.setItem("isLoggedIn", false);
+    sessionStorage.setItem("LoggedInFrom", "");
+    setLoggedIn(false);
     return (
       <div style={{ display: "flex", flexDirection: "column" }}>
         {!(
@@ -133,8 +145,10 @@ export function ConnectWithSelect({
         <div style={{ marginBottom: "1rem" }} />
         <button
           onClick={
-            () =>
-              connector instanceof GnosisSafe
+            () => {
+              setLoggedIn(true);
+              connectHandler(sessionStorage.getItem("LoggedInFrom"));
+              return connector instanceof GnosisSafe
                 ? void connector.activate()
                 : connector instanceof WalletConnect ||
                   connector instanceof Network
@@ -145,7 +159,8 @@ export function ConnectWithSelect({
                     desiredChainId === -1
                       ? undefined
                       : getAddChainParameters(desiredChainId)
-                  )
+                  );
+            }
             // connector.deactivate()
           }
         >
@@ -171,7 +186,8 @@ export function ConnectWithSelect({
         <div style={{ marginBottom: "1rem" }} />
         <button
           onClick={() => {
-            localStorage.setItem("isLoggedIn", false);
+            sessionStorage.setItem("isLoggedIn", false);
+            sessionStorage.setItem("LoggedInFrom", "");
             setLoggedIn(false);
             void connector.deactivate();
           }}
@@ -198,7 +214,7 @@ export function ConnectWithSelect({
         <div style={{ marginBottom: "1rem" }} />
         <button
           onClick={
-            () => connectHandler()()
+            () => connectHandler(sessionStorage.getItem("LoggedInFrom"))()
             // isActivating
             //   ? undefined
             //   : () =>

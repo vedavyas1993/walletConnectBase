@@ -16,21 +16,23 @@ const {
   useENSNames,
 } = hooks;
 
-export default function CoinbaseWalletCard() {
+export default function CoinbaseWalletCard(props: any) {
   const chainId = useChainId();
   const accounts = useAccounts();
   const error = useError();
   const isActivating = useIsActivating();
-
   const isActive = useIsActive();
-
   const provider = useProvider();
   const ENSNames = useENSNames(provider);
-
+  const loggedIn = props.loggedIn;
+  const setLoggedIn = props.setLoggedIn;
+  const loggedInFrom = props.loggedInFrom;
   // attempt to connect eagerly on mount
-  useEffect(() => {
-    void coinbaseWallet.connectEagerly();
-  }, []);
+  // useEffect(() => {
+  //   if (sessionStorage.getItem("LoggedInFrom") == "coinbasewallet") {
+  //     void coinbaseWallet.connectEagerly();
+  //   }
+  // }, []);
 
   return (
     <Card>
@@ -53,6 +55,9 @@ export default function CoinbaseWalletCard() {
         isActivating={isActivating}
         error={error}
         isActive={isActive}
+        loggedIn={loggedIn}
+        setLoggedIn={setLoggedIn}
+        loggedInFrom={loggedInFrom}
       />
     </Card>
   );

@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useLayoutEffect } from "react";
 import Contract from "web3-eth-contract";
+import detectEthereumProvider from "@metamask/detect-provider";
 import Web3 from "web3";
 import AaveAbi from "../contracts/AaveAbi.json";
 import Header from "../components/Header/Header";
@@ -19,6 +20,14 @@ import {
 
 export default function Home() {
   const [tokenName, setTokenName] = useState("");
+  const [metaMaskPresent, setMetaMaskPresent] = useState(true);
+  const [loading, setLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+  const [loggedIn, setLoggedIn] = useState();
+  const onConfirm = () => {
+    setShowModal(false);
+  };
+
   Contract.setProvider(
     `https://mainnet.infura.io/v3/84842078b09946638c03157f83405213`
   );
@@ -34,21 +43,18 @@ export default function Home() {
     let res = await contract.methods.name().call();
     setTokenName(res);
   };
-  // console.log("name", name());
 
-  const [showModal, setShowModal] = useState(false);
-  const [loggedin, setLoggedIn] = useState();
-  const onConfirm = () => {
-    setShowModal(false);
-  };
-
+  useEffect(() => {
+    console.log(tokenName);
+  }, []);
   useEffect(() => {
     name();
     if (typeof window !== "undefined") {
-      // Perform localStorage action
-      setLoggedIn(JSON.parse(localStorage.getItem("isLoggedIn")));
+      // Perform local Storage action
+      setLoggedIn(JSON.parse(sessionStorage.getItem("isLoggedIn")));
     }
   }, []);
+
   const hooks = {
     metaMaskHooks,
     coinBaseHooks,
@@ -60,13 +66,32 @@ export default function Home() {
     coinbaseWallet,
     walletConnect,
   };
+
+  // code to detect metamask
+  const detectMetaMask = async () => {
+    setLoading(true);
+    try {
+      let provider = await detectEthereumProvider();
+      console.log("provider", provider.isMetaMask);
+      if (provider.isMetaMask) {
+        setMetaMaskPresent(true);
+      }
+    } catch (e) {
+      setMetaMaskPresent(false);
+    }
+    setLoading(false);
+  };
+
+  useLayoutEffect(() => {
+    detectMetaMask();
+  }, []);
   return (
     <div className={styles.container}>
       <Header
         setShowModal={setShowModal}
         hooks={hooks}
         connectors={connectors}
-        loggedin={loggedin}
+        loggedIn={loggedIn}
         setLoggedIn={setLoggedIn}
       />
       {showModal && (
@@ -74,11 +99,12 @@ export default function Home() {
           onConfirm={onConfirm}
           hooks={hooks}
           connectors={connectors}
-          loggedin={loggedin}
+          loggedIn={loggedIn}
           setLoggedIn={setLoggedIn}
+          metaMaskPresent={metaMaskPresent}
+          loading={loading}
         />
       )}
-      <div>{tokenName}</div>
       <Footer />
     </div>
   );

@@ -24,12 +24,15 @@ export default function MetaMaskCard(props: any) {
   const isActive = useIsActive();
   const provider = useProvider();
   const ENSNames = useENSNames(provider);
-  const loggedin = props.loggedin;
+  const loggedIn = props.loggedIn;
   const setLoggedIn = props.setLoggedIn;
+  const loggedInFrom = props.loggedInFrom;
   // attempt to connect eagerly on mount
   // check if connected from local storage
   // useEffect(() => {
-  //   void metaMask.connectEagerly();
+  //   if (sessionStorage.getItem("LoggedInFrom") == "metamask") {
+  //     void metaMask.connectEagerly();
+  //   }
   // }, []);
 
   return (
@@ -53,8 +56,9 @@ export default function MetaMaskCard(props: any) {
         isActivating={isActivating}
         error={error}
         isActive={isActive}
-        loggedin={loggedin}
+        loggedIn={loggedIn}
         setLoggedIn={setLoggedIn}
+        loggedInFrom={loggedInFrom}
       />
     </Card>
   );

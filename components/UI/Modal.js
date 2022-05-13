@@ -1,6 +1,9 @@
+import React, { useState, useEffect, useLayoutEffect } from "react";
 import Card from "./Card";
 import Button from "./Button";
 import styles from "./Modal.module.css";
+
+import detectEthereumProvider from "@metamask/detect-provider";
 
 import CoinbaseWalletCard from "../connectorCards/CoinbaseWalletCard";
 import GnosisSafeCard from "../connectorCards/GnosisSafeCard";
@@ -29,10 +32,12 @@ import { Accounts } from "../Accounts";
 const Modal = (props) => {
   const { metaMaskHooks, coinBaseHooks, walletConnectHooks } = props.hooks;
   const { metaMask, coinbaseWallet, walletConnect } = props.connectors;
+  const metaMaskPresent = props.metaMaskPresent;
+  const loading = props.loading;
   const mmProvider = metaMaskHooks.useProvider();
   const cbProvider = coinBaseHooks.useProvider();
   const wcProvider = walletConnectHooks.useProvider();
-
+  console.log("mmp", metaMaskPresent);
   const mm = {
     chainId: metaMaskHooks.useChainId(),
     accounts: metaMaskHooks.useAccounts(),
@@ -78,63 +83,86 @@ const Modal = (props) => {
       connectedWalletDetails.push(wallet);
     }
   });
+  console.log("connect", sessionStorage.getItem("LoggedInFrom"));
+
   return (
     <>
       <div className={styles.backdrop} onClick={props.onConfirm}></div>
-      <Card className={styles.modal}>
-        {/* <ProviderExample /> */}
-        {connectedWalletDetails.length === 0 && (
-          <div
-            style={{
-              display: "flex",
-              flexFlow: "wrap",
-              fontFamily: "sans-serif",
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            {metaMaskConnected && (
-              <MetaMaskCard
-                loggedin={props.loggedin}
-                setLoggedIn={props.setLoggedIn}
-              />
-            )}
-            {/* {walletConnectConnected && <WalletConnectCard />}
-            {coinbaseWalletConnected && <CoinbaseWalletCard />} */}
-            {/* <NetworkCard />
-            <GnosisSafeCard /> */}
-          </div>
-        )}
-        {connectedWalletDetails.length !== 0 && (
-          <div>
-            {metaMaskConnected && (
-              <MetaMaskCard
-                connectedWalletDetails={connectedWalletDetails}
-                loggedin={props.loggedin}
-                setLoggedIn={props.setLoggedIn}
-              />
-            )}
-            {/* {walletConnectConnected && (
+      {loading && (
+        <Card className={styles.modal}>
+          <h1>LOADING WALLETS....</h1>
+        </Card>
+      )}
+      {!loading && (
+        <Card className={styles.modal}>
+          {/* <ProviderExample /> */}
+          {(JSON.parse(sessionStorage.getItem("isLoggedIn") == "false") ||
+            !sessionStorage.getItem("isLoggedIn")) && (
+            <div
+              style={{
+                display: "flex",
+                flexFlow: "wrap",
+                fontFamily: "sans-serif",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              {metaMaskPresent && (
+                <MetaMaskCard
+                  loggedIn={props.loggedIn}
+                  setLoggedIn={props.setLoggedIn}
+                  loggedInFrom="metamask"
+                />
+              )}
+
               <WalletConnectCard
-                loggedin={props.loggedin}
+                loggedIn={props.loggedIn}
                 setLoggedIn={props.setLoggedIn}
+                loggedInFrom="walletConnect"
               />
-            )}
-            {coinbaseWalletConnected && (
               <CoinbaseWalletCard
-                loggedin={props.loggedin}
+                loggedIn={props.loggedIn}
                 setLoggedIn={props.setLoggedIn}
+                loggedInFrom="coinbasewallet"
               />
-            )} */}
-            {/* <Accounts
+              {/* <NetworkCard />
+            <GnosisSafeCard /> */}
+            </div>
+          )}
+          {JSON.parse(sessionStorage.getItem("isLoggedIn")) == true && (
+            <div>
+              {sessionStorage.getItem("LoggedInFrom") === "metamask" &&
+                metaMaskPresent && (
+                  <MetaMaskCard
+                    connectedWalletDetails={connectedWalletDetails}
+                    loggedIn={props.loggedIn}
+                    setLoggedIn={props.setLoggedIn}
+                    loggedInFrom={"metamask"}
+                  />
+                )}
+              {sessionStorage.getItem("LoggedInFrom") === "walletConnect" && (
+                <WalletConnectCard
+                  loggedIn={props.loggedin}
+                  setLoggedIn={props.setLoggedIn}
+                  loggedInFrom="walletConnect"
+                />
+              )}
+              {sessionStorage.getItem("LoggedInFrom") === "coinbasewallet" && (
+                <CoinbaseWalletCard
+                  loggedIn={props.loggedin}
+                  setLoggedIn={props.setLoggedIn}
+                  loggedInFrom="coinbasewallet"
+                />
+              )}
+              {/* <Accounts
               accounts={connectedWalletDetails[0].accounts}
               provider={connectedWalletDetails[0].provider}
               ENSNames={connectedWalletDetails[0].ENSNames}
               chainIds={chainIds}
             /> */}
-          </div>
-        )}
-        {/* <Button
+            </div>
+          )}
+          {/* <Button
           onClick={() => {
             if (metaMaskConnected) {
               metaMask.deactivate();
@@ -150,8 +178,9 @@ const Modal = (props) => {
         >
           Disconnect
         </Button> */}
-        {/* <Button onClick={props.onConfirm}>okay</Button> */}
-      </Card>
+          {/* <Button onClick={props.onConfirm}>okay</Button> */}
+        </Card>
+      )}
     </>
   );
 };

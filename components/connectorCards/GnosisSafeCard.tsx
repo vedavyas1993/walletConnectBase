@@ -1,39 +1,47 @@
-import { useEffect } from 'react'
-import { gnosisSafe, hooks } from '../../connectors/gnosisSafe'
-import { Accounts } from '../Accounts'
-import { Card } from '../Card'
-import { Chain } from '../Chain'
-import { ConnectWithSelect } from '../ConnectWithSelect'
-import { Status } from '../Status'
+import { useEffect } from "react";
+import { gnosisSafe, hooks } from "../../connectors/gnosisSafe";
+import { Accounts } from "../Accounts";
+import { Card } from "../Card";
+import { Chain } from "../Chain";
+import { ConnectWithSelect } from "../ConnectWithSelect";
+import { Status } from "../Status";
 
-const { useChainId, useAccounts, useError, useIsActivating, useIsActive, useProvider, useENSNames } = hooks
+const {
+  useChainId,
+  useAccounts,
+  useError,
+  useIsActivating,
+  useIsActive,
+  useProvider,
+  useENSNames,
+} = hooks;
 
 export default function GnosisSafeCard() {
-  const chainId = useChainId()
-  const accounts = useAccounts()
-  const error = useError()
-  const isActivating = useIsActivating()
+  const chainId = useChainId();
+  const accounts = useAccounts();
+  const error = useError();
+  const isActivating = useIsActivating();
 
-  const isActive = useIsActive()
+  const isActive = useIsActive();
 
-  const provider = useProvider()
-  const ENSNames = useENSNames(provider)
+  const provider = useProvider();
+  const ENSNames = useENSNames(provider);
 
   // attempt to connect eagerly on mount
-  useEffect(() => {
-    void gnosisSafe.connectEagerly()
-  }, [])
+  // useEffect(() => {
+  //   void gnosisSafe.connectEagerly()
+  // }, [])
 
   return (
     <Card>
       <div>
         <b>Gnosis Safe</b>
         <Status isActivating={isActivating} error={error} isActive={isActive} />
-        <div style={{ marginBottom: '1rem' }} />
+        <div style={{ marginBottom: "1rem" }} />
         <Chain chainId={chainId} />
         <Accounts accounts={accounts} provider={provider} ENSNames={ENSNames} />
       </div>
-      <div style={{ marginBottom: '1rem' }} />
+      <div style={{ marginBottom: "1rem" }} />
       <ConnectWithSelect
         connector={gnosisSafe}
         chainId={chainId}
@@ -42,5 +50,5 @@ export default function GnosisSafeCard() {
         isActive={isActive}
       />
     </Card>
-  )
+  );
 }

@@ -16,21 +16,23 @@ const {
   useENSNames,
 } = hooks;
 
-export default function WalletConnectCard() {
+export default function WalletConnectCard(props: any) {
   const chainId = useChainId();
   const accounts = useAccounts();
   const error = useError();
   const isActivating = useIsActivating();
-
   const isActive = useIsActive();
-
   const provider = useProvider();
   const ENSNames = useENSNames(provider);
-
+  const loggedIn = props.loggedIn;
+  const setLoggedIn = props.setLoggedIn;
+  const loggedInFrom = props.loggedInFrom;
   // attempt to connect eagerly on mount
-  useEffect(() => {
-    void walletConnect.connectEagerly();
-  }, []);
+  // useEffect(() => {
+  //   if (sessionStorage.getItem("LoggedInFrom") == "walletConnect") {
+  //     void walletConnect.connectEagerly();
+  //   }
+  // }, []);
 
   return (
     <Card>
@@ -39,7 +41,12 @@ export default function WalletConnectCard() {
         <Status isActivating={isActivating} error={error} isActive={isActive} />
         <div style={{ marginBottom: "1rem" }} />
         {/* <Chain chainId={chainId} /> */}
-        <Accounts accounts={accounts} provider={provider} ENSNames={ENSNames} />
+        <Accounts
+          accounts={accounts}
+          provider={provider}
+          ENSNames={ENSNames}
+          chainId={chainId}
+        />
       </div>
       <div style={{ marginBottom: "1rem" }} />
       <ConnectWithSelect
@@ -48,6 +55,9 @@ export default function WalletConnectCard() {
         isActivating={isActivating}
         error={error}
         isActive={isActive}
+        loggedIn={loggedIn}
+        setLoggedIn={setLoggedIn}
+        loggedInFrom={loggedInFrom}
       />
     </Card>
   );

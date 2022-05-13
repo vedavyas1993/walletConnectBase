@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import styles from "../../styles/Header.module.css";
-function Header({ setShowModal, hooks, loggedin, setLoggedIn }) {
+
+function Header({ setShowModal, hooks, loggedIn, setLoggedIn }) {
   const { metaMaskHooks, coinBaseHooks, walletConnectHooks } = hooks;
   const mmProvider = metaMaskHooks.useProvider();
   const cbProvider = coinBaseHooks.useProvider();
@@ -56,16 +57,26 @@ function Header({ setShowModal, hooks, loggedin, setLoggedIn }) {
   ) {
     connectedWalletDetails = [];
   }
-  // let x;
-  // useEffect(() => {
-  //   if (typeof window !== "undefined") {
-  //     // Perform localStorage action
-  //     setLoggedIn(JSON.parse(localStorage.getItem("isLoggedIn")));
-  //     x = localStorage.getItem("isLoggedIn");
-  //   }
-  // }, []);
 
-  console.log("wallet", loggedin);
+  useEffect(() => {
+    if (mm.isActive) {
+      setLoggedIn(true);
+      sessionStorage.setItem("isLoggedIn", true);
+      sessionStorage.setItem("LoggedInFrom", "metamask");
+    }
+    if (cb.isActive) {
+      setLoggedIn(true);
+      sessionStorage.setItem("isLoggedIn", true);
+      sessionStorage.setItem("LoggedInFrom", "walletConnect");
+    }
+    if (wc.isActive) {
+      setLoggedIn(true);
+      sessionStorage.setItem("isLoggedIn", true);
+      sessionStorage.setItem("LoggedInFrom", "coinbasewallet");
+    }
+  }, [mm.isActive, cb.isActive, wc.isActive]);
+  console.log("wallet", loggedIn);
+
   return (
     <div className={styles.header}>
       <span>logo</span>
@@ -80,7 +91,7 @@ function Header({ setShowModal, hooks, loggedin, setLoggedIn }) {
             : "NOT CONNECTED"}
         </span> */}
         <button onClick={() => setShowModal(true)}>
-          {typeof loggedin !== "undefined" && loggedin == true
+          {typeof loggedIn !== "undefined" && loggedIn == true
             ? "VIEW DETAILS"
             : "CONNECT WALLET"}
         </button>
