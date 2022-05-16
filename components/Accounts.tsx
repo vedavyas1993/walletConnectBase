@@ -5,7 +5,8 @@ import { useEffect, useState } from "react";
 
 function useBalances(
   provider?: ReturnType<Web3ReactHooks["useProvider"]>,
-  accounts?: string[]
+  accounts?: string[],
+  chainId?: number
 ): BigNumber[] | undefined {
   const [balances, setBalances] = useState<BigNumber[] | undefined>();
 
@@ -42,7 +43,7 @@ export function Accounts({
   ENSNames: ReturnType<Web3ReactHooks["useENSNames"]>;
   chainId: number;
 }) {
-  const balances = useBalances(provider, accounts);
+  const balances = useBalances(provider, accounts, chainId);
 
   if (accounts === undefined) return null;
 
